@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-express";
 
 export default gql`
+  scalar Upload
   type editProfileResult {
     ok: Boolean!
     error: String
