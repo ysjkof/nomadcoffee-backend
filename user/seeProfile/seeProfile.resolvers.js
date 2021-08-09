@@ -8,6 +8,10 @@ export default {
           username,
           id,
         },
+        include: {
+          following: true,
+          followers: true,
+        },
       }),
   },
 };
