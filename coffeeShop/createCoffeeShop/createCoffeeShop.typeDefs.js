@@ -8,10 +8,10 @@ export default gql`
   type Mutation {
     createCoffeeShop(
       name: String!
-      latitude: String
-      longitude: String
-      categories: String!
-      photo: String
+      latitude: String!
+      longitude: String!
+      category: String
+      file: Upload
     ): CreateCoffeeShopResult!
   }
 `;

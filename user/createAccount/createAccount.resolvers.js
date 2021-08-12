@@ -3,7 +3,7 @@ import client from "../../client";
 
 export default {
   Mutation: {
-    createAccount: async (_, { username, email, name, password }) => {
+    createAccount: async (_, { username, email, name, password, location }) => {
       const existingUser = await client.user.findFirst({
         where: {
           OR: [{ username }, { email }],
@@ -22,6 +22,7 @@ export default {
           email,
           name,
           password: hashPassword,
+          location,
         },
       });
       return { ok: true };

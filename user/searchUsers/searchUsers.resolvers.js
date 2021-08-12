@@ -2,15 +2,18 @@ import client from "../../client";
 
 export default {
   Query: {
-    searchUsers: async (_, { keyword, page }) =>
-      client.user.findMany({
+    searchUsers: async (_, { keyword, lastId }) => {
+      const users = client.user.findMany({
         where: {
           username: {
-            startsWith: keyword.toLowerCase(),
+            contains: keyword.toLowerCase(),
           },
         },
-        take: 5,
-        skip: (page - 1) * 5,
-      }),
+        take: 10,
+        skip: lastId ? 1 : 0,
+        ...(lastId && { cursor: { id: lastId } }),
+      });
+      return users;
+    },
   },
 };

@@ -11,29 +11,28 @@ generator client {
 }
 
 model User {
-  id             Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   username       String  @unique
   email          String  @unique
-  name           String
+  name           String?
   location       String?
   password       String
   avatarURL      String?
   githubUsername String? @unique
 
-  followers  User[]       @relation("FollowRelation", references: [id])
-  following  User[]       @relation("FollowRelation", references: [id])
-  CoffeeShop CoffeeShop[]
-}
-
-model CoffeeShopPhoto {
-  id           Int        @id @default(autoincrement())
-  url          String
-  shop         CoffeeShop @relation(fields: [coffeeShopId], references: [id])
-  coffeeShopId Int
+  followers User[]       @relation("FollowRelation", references: [id])
+  following User[]       @relation("FollowRelation", references: [id])
+  shops     CoffeeShop[]
 }
 
 model CoffeeShop {
-  id         Int               @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   name       String
   latitude   String?
   longitude  String?
@@ -44,8 +43,21 @@ model CoffeeShop {
 }
 
 model Category {
-  id   Int          @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   name String       @unique
-  slug String?
+  slug String
   shop CoffeeShop[]
+}
+
+model CoffeeShopPhoto {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  url          String
+  shop         CoffeeShop @relation(fields: [coffeeShopId], references: [id])
+  coffeeShopId Int
 }
