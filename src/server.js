@@ -12,6 +12,7 @@ const PORT = process.env.PORT;
 const server = new ApolloServer({
   resolvers,
   typeDefs,
+  playground: true,
   uploads: false,
   context: async ({ req }) => {
     return {
