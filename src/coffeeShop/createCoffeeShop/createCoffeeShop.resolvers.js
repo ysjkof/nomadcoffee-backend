@@ -1,4 +1,5 @@
 import client from "../../client";
+import { uploadToS3 } from "../../shared/shared.utils";
 import { protectedResolver } from "../../user/users.utils";
 import { processCategory } from "../coffShop.utiles";
 
@@ -10,8 +11,12 @@ export default {
         { name, latitude, longitude, category, file },
         { loggedInUser }
       ) => {
+        let photoUrl = null;
+        if (file) {
+          photoUrl = await uploadToS3(file, loggedInUser.id, "uploads");
+        }
         try {
-          const createdShop = await client.coffeeShop.create({
+          const newShop = await client.coffeeShop.create({
             data: {
               name,
               latitude,
@@ -21,26 +26,22 @@ export default {
                   id: loggedInUser.id,
                 },
               },
-              categories: {
-                connectOrCreate: processCategory(category),
-              },
+              ...(category && {
+                categories: {
+                  connectOrCreate: processCategory(category),
+                },
+              }),
+              ...(photoUrl && {
+                photos: {
+                  create: {
+                    url: photoUrl,
+                  },
+                },
+              }),
             },
           });
 
-          if (file) {
-            const photoUrl = await handleFile(file, loggedInUser.id);
-            await client.coffeeShopPhoto.create({
-              data: {
-                url: photoUrl,
-                shop: {
-                  connect: {
-                    id: shop.id,
-                  },
-                },
-              },
-            });
-          }
-          return { ok: true };
+          return { ok: true, coffeeShop: newShop };
         } catch (error) {
           return {
             ok: false,

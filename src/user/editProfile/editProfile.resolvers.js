@@ -1,7 +1,7 @@
-import { createWriteStream } from "fs";
 import bcrypt from "bcrypt";
 import client from "../../client";
 import { protectedResolver } from "../users.utils";
+import { deleteUploadedFile, uploadToS3 } from "../../shared/shared.utils";
 
 const resolverFn = async (
   _,
@@ -11,22 +11,23 @@ const resolverFn = async (
     name,
     location,
     password: newPassword,
-    avatarURL,
+    avatar,
     githubUsername,
   },
   { loggedInUser }
 ) => {
   let avatarUrl = null;
-  if (avatarURL) {
-    const { filename, createReadStream } = await avatarURL;
-    const newFilename = `${loggedInUser.id}-${Date.now()}-${filename}`;
-    const readStream = createReadStream();
-    const writeStream = createWriteStream(
-      process.cwd() + "/uploads/" + newFilename
-    );
-    readStream.pipe(writeStream);
-    avatarUrl = `http://localhost:4000/static/${newFilename}`;
+  if (avatar) {
+    const user = await client.user.findUnique({
+      where: { id: loggedInUser.id },
+      select: { avatarURL: true },
+    });
+    if (user?.avatarURL) {
+      await deleteUploadedFile(user.avatarURL, "avatar");
+    }
+    avatarURL = await uploadToS3(avatar, loggedInUser.id, "avatar");
   }
+
   let uglyPassword = null;
   if (newPassword) {
     uglyPassword = await bcrypt.hash(newPassword, 10);
@@ -41,7 +42,7 @@ const resolverFn = async (
       name,
       location,
       ...(uglyPassword && { password: uglyPassword }),
-      ...(avatarUrl && { avatarURL: avatarUrl }),
+      ...(avatarUrl && { avatarURL }),
       githubUsername,
     },
   });
